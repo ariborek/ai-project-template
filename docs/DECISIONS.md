@@ -2,31 +2,31 @@
 
 Record decisions here when they establish durable architectural, technical, security, or workflow direction. Add a new entry rather than rewriting history; if a decision changes, mark the old entry superseded and link to its replacement. Keep routine implementation details in issues or pull requests.
 
-## Decision entry template
+## Reusable decision entry
 
-Copy this section for each decision and replace the placeholders.
+Copy the structure below for each decision. Replace every italic instruction with the real project information. Remove sections that do not apply rather than leaving instructions in a completed entry.
 
-### `[DECISION_TITLE]`
+### *Write a short decision title*
 
-- **Date:** `[YYYY-MM-DD]`
-- **Status:** `[PROPOSED | ACCEPTED | SUPERSEDED | REJECTED]`
+- **Date:** *Use the YYYY-MM-DD format.*
+- **Status:** *Choose proposed, accepted, superseded, or rejected.*
 
 #### Context
 
-`[WHY_A_DECISION_IS_NEEDED_AND_WHAT_FORCES_SHAPE_IT]`
+*Explain why a decision is needed and what constraints shape it.*
 
 #### Decision
 
-`[WHAT_WAS_DECIDED]`
+*State what was decided.*
 
 #### Alternatives
 
-- `[ALTERNATIVE_AND_WHY_IT_WAS_NOT_CHOSEN]`
+- *List an alternative and explain why it was not chosen.*
 
 #### Consequences
 
-- `[POSITIVE_NEGATIVE_OR_NEUTRAL_EFFECT]`
+- *Describe the positive, negative, or neutral effects.*
 
 #### Follow-up
 
-- `[ACTION_OWNER_AND_DUE_DATE_IF_APPLICABLE]`
+- *Record any action, owner, and due date that apply.*

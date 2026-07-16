@@ -23,6 +23,8 @@ const EXPECTED_CLAUDE_CONTENT =
   "# Claude Code Project Instructions\n\n@AGENTS.md\n";
 const EXPECTED_NODE_VERSION = "24.18.0\n";
 const VALID_MODES = new Set(["template", "project"]);
+const SCHEMA_VERSION_GUIDANCE =
+  "This repository must use templateValidation.schemaVersion 1. Compare the repository with the current canonical ai-project-template instead of guessing or manually bypassing validation.";
 const PLACEHOLDER_PATTERN =
   /\[[A-Z][A-Z0-9_-]*(?:\s*\|\s*[A-Z][A-Z0-9_-]*)*\]/g;
 
@@ -294,8 +296,33 @@ export async function validatePackageJson(root) {
     }
   }
 
-  if (!VALID_MODES.has(packageJson.templateValidation?.mode)) {
-    failures.push(`${relativeFile}: templateValidation.mode must be template or project`);
+  const templateValidation = packageJson.templateValidation;
+  if (
+    templateValidation === null ||
+    typeof templateValidation !== "object" ||
+    Array.isArray(templateValidation)
+  ) {
+    failures.push(
+      `${relativeFile}: templateValidation must be an object. ${SCHEMA_VERSION_GUIDANCE}`,
+    );
+  } else {
+    if (!("schemaVersion" in templateValidation)) {
+      failures.push(
+        `${relativeFile}: templateValidation.schemaVersion is missing. ${SCHEMA_VERSION_GUIDANCE}`,
+      );
+    } else if (!Number.isInteger(templateValidation.schemaVersion)) {
+      failures.push(
+        `${relativeFile}: templateValidation.schemaVersion must be an integer, but found ${JSON.stringify(templateValidation.schemaVersion)}. ${SCHEMA_VERSION_GUIDANCE}`,
+      );
+    } else if (templateValidation.schemaVersion !== 1) {
+      failures.push(
+        `${relativeFile}: templateValidation.schemaVersion ${templateValidation.schemaVersion} is unsupported. ${SCHEMA_VERSION_GUIDANCE}`,
+      );
+    }
+
+    if (!VALID_MODES.has(templateValidation.mode)) {
+      failures.push(`${relativeFile}: templateValidation.mode must be template or project`);
+    }
   }
   if ("dependencies" in packageJson || "devDependencies" in packageJson) {
     failures.push(`${relativeFile}: dependencies and devDependencies are not allowed`);
