@@ -71,7 +71,26 @@ npm run check
 
 `npm run check` runs validation and the validator's tests. GitHub Actions runs the same command for pull requests and pushes to `main`.
 
-The `templateValidation.mode` setting in `package.json` controls placeholder validation. Keep it set to `template` for this reusable starter. After creating a real project and replacing every documented placeholder, change it to `project` so unresolved placeholders fail validation.
+### Schema version 1 and validation modes
+
+`templateValidation.schemaVersion` set to the integer `1` means the repository follows version 1 of this template's validation contract. That contract lets compatible tools, such as `ai-project-bootstrap`, understand the expected configuration and validation behavior. This does not imply that any such tool is finished or publicly available.
+
+The `templateValidation.mode` setting controls placeholder validation:
+
+- `template` mode is for the reusable starter and generated repositories that still contain documented placeholders.
+- `project` mode is for a real project after every documented reusable placeholder has been replaced; unresolved placeholders then fail validation.
+
+Do not manually bypass validation. If the schema version is missing or unsupported, compare the repository with the current canonical `ai-project-template` instead of guessing or changing the version silently.
+
+For a generated project, use this safe sequence:
+
+1. Create the repository from the template.
+2. Clone the generated repository.
+3. Create a focused feature branch.
+4. Customize all documented fields and reusable placeholders.
+5. Change `templateValidation.mode` to `project`.
+6. Run `npm run check`.
+7. Review the changes, then commit them.
 
 Non-Node projects may remove or replace `.node-version`, `package.json`, the Node-specific `.gitignore` entries, and this validation layer with suitable equivalents.
 

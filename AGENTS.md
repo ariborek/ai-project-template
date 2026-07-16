@@ -20,6 +20,14 @@ This repository is a reusable starter for AI-assisted projects. Customize this f
 
 Run `npm run check` before claiming template or documentation work is complete. In `package.json`, `templateValidation.mode` is `template` while this repository retains reusable placeholders; change it to `project` only after a real project replaces them.
 
+## Template validation schema
+
+- `templateValidation.schemaVersion` must remain the integer `1`. Agents must not guess, remove, bypass, or silently change it.
+- `templateValidation.mode` must be either `"template"` or `"project"`.
+- Generated repositories begin in `template` mode. After replacing all documented reusable placeholders, change the mode to `project`.
+- For a missing or unsupported schema version, compare the repository with the current canonical `ai-project-template`.
+- `npm run check` must pass before work is considered complete.
+
 ## Boundaries and safety
 
 - Work only inside this repository unless explicitly authorized otherwise.
