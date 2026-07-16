@@ -13,6 +13,7 @@
     "check": "npm run validate && npm test"
   },
   "templateValidation": {
+    "schemaVersion": 1,
     "mode": "template"
   }
 }

@@ -6,6 +6,7 @@ import test, { afterEach } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  validatePackageJson,
   validatePlaceholders,
   validateRepository,
 } from "./validate-template.mjs";
@@ -74,6 +75,18 @@ async function replaceFile(fixtureRoot, relativeFile, transform) {
   await writeFile(filePath, transform(current), "utf8");
 }
 
+async function replaceTemplateValidation(fixtureRoot, templateValidation) {
+  await replaceFile(fixtureRoot, "package.json", (content) => {
+    const packageJson = JSON.parse(content);
+    if (templateValidation === undefined) {
+      delete packageJson.templateValidation;
+    } else {
+      packageJson.templateValidation = templateValidation;
+    }
+    return `${JSON.stringify(packageJson, null, 2)}\n`;
+  });
+}
+
 test("the current repository passes validation", async () => {
   const result = await validateRepository(repositoryRoot);
   assert.deepEqual(result.failures, []);
@@ -108,6 +121,91 @@ test("an obvious secret-like value fails", async () => {
   assert(
     result.failures.some((failure) =>
       failure.includes("possible GitHub personal access token found"),
+    ),
+  );
+});
+
+test("package validation requires templateValidation to be an object", async () => {
+  const fixtureRoot = await createRepositoryFixture();
+  await replaceTemplateValidation(fixtureRoot, "template");
+
+  const failures = await validatePackageJson(fixtureRoot);
+  assert(
+    failures.some((failure) =>
+      failure.includes("templateValidation must be an object"),
+    ),
+  );
+  assert(
+    failures.some((failure) =>
+      failure.includes("current canonical ai-project-template instead of guessing"),
+    ),
+  );
+});
+
+const invalidSchemaVersions = [
+  ["a missing schema version", { mode: "template" }, "schemaVersion is missing"],
+  [
+    "a string schema version",
+    { schemaVersion: "1", mode: "template" },
+    "schemaVersion must be an integer",
+  ],
+  [
+    "a fractional schema version",
+    { schemaVersion: 1.5, mode: "template" },
+    "schemaVersion must be an integer",
+  ],
+  [
+    "schema version zero",
+    { schemaVersion: 0, mode: "template" },
+    "schemaVersion 0 is unsupported",
+  ],
+  [
+    "an unsupported integer schema version",
+    { schemaVersion: 2, mode: "template" },
+    "schemaVersion 2 is unsupported",
+  ],
+];
+
+for (const [name, templateValidation, expectedProblem] of invalidSchemaVersions) {
+  test(`${name} fails with schema-v1 guidance`, async () => {
+    const fixtureRoot = await createRepositoryFixture();
+    await replaceTemplateValidation(fixtureRoot, templateValidation);
+
+    const failures = await validatePackageJson(fixtureRoot);
+    const failure = failures.find((candidate) => candidate.includes(expectedProblem));
+    assert(failure, `expected a failure containing ${JSON.stringify(expectedProblem)}`);
+    assert(failure.includes("must use templateValidation.schemaVersion 1"));
+    assert(
+      failure.includes(
+        "Compare the repository with the current canonical ai-project-template instead of guessing or manually bypassing validation",
+      ),
+    );
+  });
+}
+
+test("a missing validation mode fails", async () => {
+  const fixtureRoot = await createRepositoryFixture();
+  await replaceTemplateValidation(fixtureRoot, { schemaVersion: 1 });
+
+  const failures = await validatePackageJson(fixtureRoot);
+  assert(
+    failures.includes(
+      "package.json: templateValidation.mode must be template or project",
+    ),
+  );
+});
+
+test("an invalid validation mode fails", async () => {
+  const fixtureRoot = await createRepositoryFixture();
+  await replaceTemplateValidation(fixtureRoot, {
+    schemaVersion: 1,
+    mode: "development",
+  });
+
+  const failures = await validatePackageJson(fixtureRoot);
+  assert(
+    failures.includes(
+      "package.json: templateValidation.mode must be template or project",
     ),
   );
 });
